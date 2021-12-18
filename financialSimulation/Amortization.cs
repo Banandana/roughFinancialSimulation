@@ -65,6 +65,14 @@ namespace financialSimulation
             }
         }
 
+        public double getPMI()
+        {
+            // Calculate insurance based on rate
+            double insurancePerYear = amount * mortgageInsuranceRate;
+            double pmi = (insurancePerYear / 12);
+            return pmi;
+        }
+
         public double getMonthlyPayment(int month)
         {
             if (calculatedPayment.ContainsKey(month))
@@ -79,15 +87,13 @@ namespace financialSimulation
 
             double payment = getPreInsuranceMonthlyPayment();
 
-            // Calculate insurance based on rate
-            double insurancePerYear = amount * mortgageInsuranceRate;
-            double pmi = (insurancePerYear / 12);
+            
 
             // Calculate 
             double equity = getTotalEquityForMonth(month);
             if (equity / amount <= 0.2)
             {
-                payment += pmi;
+                payment += getPMI();
             }
 
 

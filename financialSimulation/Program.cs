@@ -3,15 +3,17 @@
 Console.WriteLine("Hello, World!");
 
 
-int downPayment = 25000;
+int downPayment = 30000;
+int cost = 450000;
 float rent = 1960;
 
-Amortization amortization = new Amortization(410000, downPayment, 0.035, 0.007, 30);
+Amortization amortization = new Amortization(cost, downPayment, 0.035, 0.007, 30);
 double totalCost = amortization.CalculateTotalCost();
 double firstMonthPayment = amortization.getMonthlyPayment(0);
 double firstMonthPrincipal = amortization.getPrincipalForMonth(0);
 
 Console.WriteLine("Loan Payment = " + firstMonthPayment);
+Console.WriteLine("Loan Insurance = " + amortization.getPMI());
 Console.WriteLine("Loan Total Cost = " + totalCost);
 
 double rentingInvestment = firstMonthPayment - rent;
@@ -56,6 +58,9 @@ void printYear(int year)
 void printMonths(int year)
 {
     Console.WriteLine("Year  " + year);
+
+    double interest = 0;
+
     for (int month = (year * 12) - 12; month < (year * 12); month++)
     {
         Console.WriteLine("Month " + month);
@@ -63,21 +68,31 @@ void printMonths(int year)
         Console.WriteLine("\tPrincipal Payment = " + amortization.getPrincipalForMonth(month));
         Console.WriteLine("\tOutstanding = " + amortization.getLoanBalanceAtMonth(month));
         Console.WriteLine("\tEquity Balance = " + amortization.getTotalEquityForMonth(month));
+        Console.WriteLine("\tEquity % = " + (amortization.getTotalEquityForMonth(month) / cost));
         Console.WriteLine("\tPostmortgage Balance = " + postMortgageInvestment.getAmountForMonth(month));
         Console.WriteLine("\n\tTotal House Buying Worth = " + (amortization.getTotalEquityForMonth(month) + postMortgageInvestment.getAmountForMonth(month)));
 
         Console.WriteLine("\tRenting Balance          = " + simpleInvestment.getAmountForMonth(month));
 
         Console.WriteLine("\tHypothetical House Upside          = " + ((amortization.getTotalEquityForMonth(month) + postMortgageInvestment.getAmountForMonth(month)) - simpleInvestment.getAmountForMonth(month)));
+
+        Console.WriteLine("\tInterest accumulation = " + (amortization.getMonthlyPayment(month) - amortization.getPrincipalForMonth(month) - amortization.getPMI()));
+        interest += amortization.getMonthlyPayment(month) - amortization.getPrincipalForMonth(month) - amortization.getPMI();
     }
+
+    Console.WriteLine("Interest paid for year " + year + " = " + interest);
+
+
 }
 
 printMonths(1);
-printYear(5);
-printYear(6);
-printYear(7);
-printYear(10);
-printYear(20);
+printMonths(2);
+printMonths(3);
+printMonths(4);
+printMonths(5);
+printMonths(6);
+printMonths(7);
+printMonths(8);
 printYear(30);
 printYear(40);
 printYear(50);
