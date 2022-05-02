@@ -21,6 +21,8 @@ namespace financialSimulation
         Dictionary<int, double> calculatedEquity = new Dictionary<int, double>();
         double calculatedTotalCost;
 
+        int calculated20PercentMonth = 0;
+
         public Amortization(int amount, int down, double interestRate, double insuranceRate, int numberOfYears)
         {
             this.down = down;
@@ -54,6 +56,11 @@ namespace financialSimulation
             return calculatedTotalCost;
         }
 
+        public int Get20PercentMonth()
+        {
+            return calculated20PercentMonth;
+        }
+
         public void CalculateIterations(int totalYears)
         {
             for (int i = 0; i < totalYears * 12; i++)
@@ -71,6 +78,14 @@ namespace financialSimulation
             double insurancePerYear = amount * mortgageInsuranceRate;
             double pmi = (insurancePerYear / 12);
             return pmi;
+        }
+
+        public double getTotalPMICost()
+        {
+            double pmi = getPMI();
+            int pmiLength = Get20PercentMonth();
+
+            return pmi * pmiLength;
         }
 
         public double getMonthlyPayment(int month)
@@ -91,7 +106,8 @@ namespace financialSimulation
 
             // Calculate 
             double equity = getTotalEquityForMonth(month);
-            if (equity / amount <= 0.2)
+            double percentageEquity = equity / amount;
+            if (percentageEquity < 0.2)
             {
                 payment += getPMI();
             }
@@ -103,8 +119,10 @@ namespace financialSimulation
 
             //Console.WriteLine("1 + r / n ^ n * t - 1 = " + (Math.Pow((1 + r / n), (n * t)) - 1));
 
-            calculatedPayment[month] = payment;
-            return payment;
+            // Magic Number 280: Rough property tax monthly amount.
+            // Magic number 70: Homeowners insurance rate.
+            calculatedPayment[month] = payment;// + 70 + 280.15;
+            return payment;// + 70 + 280.15;
         }
 
         public double getLoanAmountPrepaymentAtMonth(int paymentNumber)
@@ -128,6 +146,7 @@ namespace financialSimulation
             }
 
             double balance = getLoanAmountPrepaymentAtMonth(month) - getPrincipalForMonth(month);
+
             calculatedBalance[month] = balance;
 
             return balance;
@@ -149,6 +168,11 @@ namespace financialSimulation
             return principle;
         }
 
+        double getEquityPercent(double equity)
+        {
+            return (equity / (amount + down));
+        }
+
         public double getRawEquityBalanceForMonth(int month)
         {
             if (calculatedEquity.ContainsKey(month))
@@ -158,6 +182,16 @@ namespace financialSimulation
 
             double equity = amount - getLoanBalanceAtMonth(month);
             calculatedEquity[month] = equity;
+            if (calculated20PercentMonth == 0 && month != 0)
+            {
+                if (getEquityPercent(calculatedEquity[month] + down) > 0.2 && getEquityPercent(calculatedEquity[month - 1] + down) < 0.2)
+                {
+                    calculated20PercentMonth = month;
+                }
+            } else if (month == 0)
+            {
+                return 0 + down;
+            }
 
 
             return equity;
